@@ -1,0 +1,27 @@
+proto_outdir = "./proto"
+
+[[dependencies]]
+  target = "github.com/envoyproxy/data-plane-api"
+  revision = "d6828354ba6b4e67fd34ce41a14cbed9ad081b45"
+  branch = "master"
+  path = ""
+
+[[dependencies]]
+  target = "github.com/cncf/udpa/udpa"
+  revision = "5459f2c994033b0afed7e4a70ac7e90c90c1ffee"
+  branch = "master"
+  path = "udpa"
+
+[[dependencies]]
+  target = "github.com/envoyproxy/protoc-gen-validate"
+  revision = "1bcea29601b5624234a19b3d7f0ebd9e9984f583"
+  branch = "master"
+  path = ""
+  ignores = ["java", "tests"]
+
+[[dependencies]]
+  target = "github.com/googleapis/googleapis"
+  revision = "5695950715dd5c6d45e9d7e9129d9cd28d403267"
+  branch = "master"
+  path = ""
+  ignores = ["gapic", "grafeas", "storage"]

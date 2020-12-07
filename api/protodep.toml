@@ -1,0 +1,21 @@
+proto_outdir = "./proto"
+
+[[dependencies]]
+  target = "github.com/envoyproxy/data-plane-api"
+  branch = "master"
+
+[[dependencies]]
+  target = "github.com/cncf/udpa/udpa"
+  path = "udpa"
+  branch = "master"
+
+[[dependencies]]
+  target = "github.com/envoyproxy/protoc-gen-validate"
+  branch = "master"
+  ignores = ["java", "tests"]
+
+[[dependencies]]
+  target = "github.com/googleapis/googleapis"
+  branch = "master"
+  ignores = ["gapic", "grafeas", "storage"]
+
