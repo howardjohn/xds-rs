@@ -8,9 +8,13 @@ name = "helloworld-client"
 path = "src/helloworld/client.rs"
 
 [dependencies]
-tonic = "0.3"
-prost = "0.6"
-tokio = { version = "0.2", features = ["macros"] }
+tonic = "0.4"
+prost = "0.7"
+tokio-stream = { version =  "0.1", features = ["net"] }
+async-stream = "0.3"
+futures = { version = "0.3", default-features = false, features = ["alloc"] }
+
+tokio = { version = "1.0", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
 
 [build-dependencies]
-tonic-build = { version = "0.3", features = ["prost"] }
+tonic-build = { version = "0.4", features = ["prost"] }

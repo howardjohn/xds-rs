@@ -1,26 +1,32 @@
+use xds::aggregated_discovery_service_client::AggregatedDiscoveryServiceClient;
 
-// https://github.com/cetanu/sovereign-rs/blob/master/src/proto.rs
+use futures::stream;
 
-pub mod google {
-    pub mod rpc {
-        tonic::include_proto!("google.rpc");
-    }
+pub mod xds {
+    tonic::include_proto!("envoy.service.discovery.v3");
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // let mut client = GreeterClient::connect("http://[::1]:50051").await?;
+    let mut client = AggregatedDiscoveryServiceClient::connect("http://[::1]:15010").await?;
 
-    // let request = tonic::Request::new(HelloRequest {
-    //     name: "Tonic".into(),
-    // });
+    let outbound = stream::iter(vec![xds::Request {
+        type_url: "type.googleapis.com/envoy.config.cluster.v3.Cluster".into(),
+        node: Some(xds::Node {
+            id: "sidecar~1.1.1.1~debug.default~default.svc.cluster.local".into(),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }]);
 
-    // let xds = tonic::Request::new(DiscoveryRequest{});
+    let response = client
+        .stream_aggregated_resources(tonic::Request::new(outbound))
+        .await?;
+    let mut inbound = response.into_inner();
 
-    // let response = client.say_hello(request).await?;
-
-    // println!("RESPONSE={:?}", response);
-    // println!("XDS={:?}", xds);
+    while let Some(note) = inbound.message().await? {
+        println!("RESPONSE = {:?}", note);
+    }
 
     Ok(())
 }
