@@ -4,10 +4,6 @@ version = "0.1.0"
 edition = "2018"
 
 [[bin]]
-name = "helloworld-server"
-path = "src/helloworld/server.rs"
-
-[[bin]]
 name = "helloworld-client"
 path = "src/helloworld/client.rs"
 
