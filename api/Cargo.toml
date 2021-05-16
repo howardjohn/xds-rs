@@ -10,6 +10,7 @@ path = "src/helloworld/client.rs"
 [dependencies]
 tonic = "0.4"
 prost = "0.7"
+prost-types = "0.7.0"
 tokio-stream = { version =  "0.1", features = ["net"] }
 async-stream = "0.3"
 futures = { version = "0.3", default-features = false, features = ["alloc"] }

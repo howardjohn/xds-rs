@@ -1,3 +1,4 @@
+use prost::Message;
 use xds::aggregated_discovery_service_client::AggregatedDiscoveryServiceClient;
 
 use futures::stream;
@@ -10,7 +11,7 @@ pub mod xds {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = AggregatedDiscoveryServiceClient::connect("http://[::1]:15010").await?;
 
-    let outbound = stream::iter(vec![xds::Request {
+    let outbound = stream::iter(vec![xds::DiscoveryRequest {
         type_url: "type.googleapis.com/envoy.config.cluster.v3.Cluster".into(),
         node: Some(xds::Node {
             id: "sidecar~1.1.1.1~debug.default~default.svc.cluster.local".into(),
@@ -24,8 +25,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     let mut inbound = response.into_inner();
 
-    while let Some(note) = inbound.message().await? {
-        println!("RESPONSE = {:?}", note);
+    while let Some(resp) = inbound.message().await? {
+        for resource in resp.resources {
+            let r = xds::Resource::decode(resource.value.as_slice())?;
+            println!("RESPONSE = {:?}", r.name);
+        }
     }
 
     Ok(())

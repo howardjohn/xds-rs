@@ -4,15 +4,10 @@ syntax = "proto3";
 // URL: /PACKAGE.SERVICE/METHOD
 package envoy.service.discovery.v3;
 
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+
 option go_package="github.com/costinm/wpgate/pkg/xds";
-
-//	ServiceName: "envoy.service.discovery.v2.AggregatedDiscoveryService",
-
-// Copied to avoid dependency. type_url format: prefix/message.type
-message Any {
-    string type_url = 1;
-    bytes value = 2;
-}
 
 message Status {
     // The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
@@ -26,7 +21,7 @@ message Status {
     // A list of messages that carry the error details.  There is a common set of
     // message types for APIs to use.
     // google.protobuf.Any
-    repeated Any details = 3;
+    repeated google.protobuf.Any details = 3;
 }
 
 
@@ -65,7 +60,7 @@ message Node {
 }
 
 // Binary compatible with DiscoveryRequest, with payload extension
-message Request {
+message DiscoveryRequest {
     // The version_info provided in the request messages will be the version_info
     // received with the most recent successfully processed response or empty on
     // the first request. It is expected that no new request is sent after a
@@ -104,17 +99,15 @@ message Request {
     // debugging, the string provided is not guaranteed to be stable across Envoy versions.
     // google.rpc.Status
     Status error_detail = 6;
-
-    repeated Any resources = 7;
 }
 
-message Response {
+message DiscoveryResponse {
     // The version of the response data.
     string version_info = 1;
 
     // The response resources. These resources are typed and depend on the API being called.
     // google.protobuf.Any
-    repeated Any resources = 2;
+    repeated google.protobuf.Any resources = 2;
 
     // [#not-implemented-hide:]
     // Canary is used to support two Envoy command line flags:
@@ -148,6 +141,49 @@ message Response {
     string nonce = 5;
 }
 
+message Resource {
+  // Cache control properties for the resource.
+  // [#not-implemented-hide:]
+  message CacheControl {
+    // If true, xDS proxies may not cache this resource.
+    // Note that this does not apply to clients other than xDS proxies, which must cache resources
+    // for their own use, regardless of the value of this field.
+    bool do_not_cache = 1;
+  }
+
+  // The resource's name, to distinguish it from others of the same type of resource.
+  string name = 3;
+
+  // The aliases are a list of other names that this resource can go by.
+  repeated string aliases = 4;
+
+  // The resource level version. It allows xDS to track the state of individual
+  // resources.
+  string version = 1;
+
+  // The resource being tracked.
+  google.protobuf.Any resource = 2;
+
+  // Time-to-live value for the resource. For each resource, a timer is started. The timer is
+  // reset each time the resource is received with a new TTL. If the resource is received with
+  // no TTL set, the timer is removed for the resource. Upon expiration of the timer, the
+  // configuration for the resource will be removed.
+  //
+  // The TTL can be refreshed or changed by sending a response that doesn't change the resource
+  // version. In this case the resource field does not need to be populated, which allows for
+  // light-weight "heartbeat" updates to keep a resource with a TTL alive.
+  //
+  // The TTL feature is meant to support configurations that should be removed in the event of
+  // a management server failure. For example, the feature may be used for fault injection
+  // testing where the fault injection should be terminated in the event that Envoy loses contact
+  // with the management server.
+  google.protobuf.Duration ttl = 6;
+
+  // Cache control properties for the resource.
+  // [#not-implemented-hide:]
+  CacheControl cache_control = 7;
+}
+
 
 // Bi-directional streaming interface for messages.
 // Subscribe, Ack, Push are represented as upstream messages.
@@ -160,5 +196,5 @@ message Response {
 // DiscoveryRequest/DiscoveryResponse provides sufficient information to recover
 // the multiplexed singleton APIs at the Envoy instance and management server.
 service AggregatedDiscoveryService {
-    rpc StreamAggregatedResources(stream Request) returns (stream Response) {}
+    rpc StreamAggregatedResources(stream DiscoveryRequest) returns (stream DiscoveryResponse) {}
 }
